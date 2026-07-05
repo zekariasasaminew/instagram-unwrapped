@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# worker bundle (built by scripts/build-worker.mjs, not committed)
+/public/worker.js
+
 # production
 /build
 

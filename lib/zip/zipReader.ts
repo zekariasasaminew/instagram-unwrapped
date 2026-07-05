@@ -64,7 +64,7 @@ export async function openZip(file: File): Promise<OpenedZip> {
   let rawEntries: Entry[];
   try {
     rawEntries = await reader.getEntries();
-  } catch (err) {
+  } catch {
     await reader.close().catch(() => {});
     throw new Error(
       "This doesn't look like a valid zip file. Please upload the .zip Instagram sent you, without extracting it first."
