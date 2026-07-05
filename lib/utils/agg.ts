@@ -6,14 +6,19 @@ export function bump<K>(map: Map<K, number>, key: K, by = 1): void {
   map.set(key, (map.get(key) ?? 0) + by);
 }
 
+/** Entries sorted by count descending, ties broken by insertion order
+ * (matches Python's Counter.most_common(), since JS sort is stable and Map
+ * preserves insertion order). */
+export function sortedEntries(map: Map<string, number>, n?: number): [string, number][] {
+  const sorted = [...map.entries()].sort((a, b) => b[1] - a[1]);
+  return n === undefined ? sorted : sorted.slice(0, n);
+}
+
 export function topN(
   map: Map<string, number>,
   n: number
 ): { word: string; count: number }[] {
-  return [...map.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, n)
-    .map(([word, count]) => ({ word, count }));
+  return sortedEntries(map, n).map(([word, count]) => ({ word, count }));
 }
 
 export function median(values: number[]): number {
