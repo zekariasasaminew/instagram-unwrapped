@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { UploadDropzone } from "@/components/UploadDropzone";
 import { ProgressView } from "@/components/ProgressView";
 import { PrivacyNotice } from "@/components/PrivacyNotice";
+import { Dashboard } from "@/components/dashboard/Dashboard";
 import type { Summary, WorkerResponse } from "@/lib/types";
 
 type State =
@@ -52,6 +53,10 @@ export default function Home() {
     setState({ status: "idle" });
   }
 
+  if (state.status === "done") {
+    return <Dashboard summary={state.summary} onReset={reset} />;
+  }
+
   return (
     <div className="viz-root">
       <div className="wrap">
@@ -75,19 +80,6 @@ export default function Home() {
             <p>{state.message}</p>
             <button className="btn" onClick={reset} style={{ marginTop: 12 }}>
               Try again
-            </button>
-          </div>
-        )}
-
-        {state.status === "done" && (
-          <div className="card">
-            <h2>Done</h2>
-            <p className="list-note">
-              Parsed {state.summary.milestones.total_messages.toLocaleString()} messages across{" "}
-              {state.summary.milestones.total_threads.toLocaleString()} conversations.
-            </p>
-            <button className="btn" onClick={reset} style={{ marginTop: 12 }}>
-              Start over
             </button>
           </div>
         )}
