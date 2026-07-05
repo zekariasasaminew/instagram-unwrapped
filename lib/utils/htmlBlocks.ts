@@ -14,7 +14,14 @@ export interface PamBlock {
 
 export type TableRecord = Record<string, string>;
 
-function getText(el: Element, separator = ""): string {
+/** Exported for parser stages that need to query a format-specific selector
+ * this module doesn't have a named helper for (e.g. ads.ts's old/new export
+ * format detection via <tr class="_1isx">, <span class="_38my">, <h1>). */
+export function parseDocument(html: string) {
+  return parseHTML(html).document;
+}
+
+export function getText(el: Element, separator = ""): string {
   const parts: string[] = [];
   const walk = (node: Node) => {
     if (node.nodeType === 3 /* TEXT_NODE */) {
