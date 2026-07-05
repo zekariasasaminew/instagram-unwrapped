@@ -35,23 +35,27 @@ export async function parseActivity(entries: ZipEntry[]): Promise<ActivityResult
     const prefix = ACTIVITY_PREFIXES.find((p) => entry.filename.startsWith(p));
     if (!prefix) continue;
     const kind = prefix.split("/").filter(Boolean).slice(-1)[0]; // e.g. "likes"
-    const html = await entry.getText();
+    try {
+      const html = await entry.getText();
 
-    for (const { header, timestamp } of pamBlocks(html)) {
-      if (parseTimestamp(timestamp) === null) continue;
-      bump(activityTypeCounts, kind);
-      if ((kind === "likes" || kind === "comments") && header && !STRUCTURAL_LABELS.has(header)) {
-        bump(engagementCounter, header);
+      for (const { header, timestamp } of pamBlocks(html)) {
+        if (parseTimestamp(timestamp) === null) continue;
+        bump(activityTypeCounts, kind);
+        if ((kind === "likes" || kind === "comments") && header && !STRUCTURAL_LABELS.has(header)) {
+          bump(engagementCounter, header);
+        }
       }
-    }
 
-    // Instagram's newer export nests likes/comments in tables (Username /
-    // Media Owner fields) instead of a flat h2=username block.
-    if (kind === "likes" || kind === "comments") {
-      for (const record of leafTableRows(html)) {
-        const who = record["Username"] || record["Media Owner"];
-        if (who) bump(engagementCounter, who);
+      // Instagram's newer export nests likes/comments in tables (Username /
+      // Media Owner fields) instead of a flat h2=username block.
+      if (kind === "likes" || kind === "comments") {
+        for (const record of leafTableRows(html)) {
+          const who = record["Username"] || record["Media Owner"];
+          if (who) bump(engagementCounter, who);
+        }
       }
+    } catch {
+      // One malformed fragment shouldn't abort the whole stage.
     }
   }
 

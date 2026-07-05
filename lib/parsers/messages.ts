@@ -50,6 +50,7 @@ export interface MessagesResult {
   milestones: Milestones;
   longestStreak: LongestStreak;
   replySpeed: ReplySpeedEntry[];
+  skippedFiles: number;
 }
 
 export async function parseMessages(
@@ -68,14 +69,20 @@ export async function parseMessages(
 
   const allMessages: RawMessage[] = [];
   let processed = 0;
+  let skippedFiles = 0;
   const totalFiles = [...threadFiles.values()].reduce((s, l) => s + l.length, 0);
   for (const [threadId, files] of threadFiles) {
     for (const file of files) {
-      const html = await file.getText();
-      for (const { header, timestamp, content } of pamBlocks(html)) {
-        const dt = parseTimestamp(timestamp);
-        if (dt === null || !header) continue;
-        allMessages.push({ threadId, sender: header, dt, content });
+      try {
+        const html = await file.getText();
+        for (const { header, timestamp, content } of pamBlocks(html)) {
+          const dt = parseTimestamp(timestamp);
+          if (dt === null || !header) continue;
+          allMessages.push({ threadId, sender: header, dt, content });
+        }
+      } catch {
+        // One malformed fragment shouldn't abort parsing thousands of others.
+        skippedFiles++;
       }
       processed++;
       onProgress?.(processed, totalFiles);
@@ -383,5 +390,6 @@ export async function parseMessages(
     milestones,
     longestStreak,
     replySpeed,
+    skippedFiles,
   };
 }
