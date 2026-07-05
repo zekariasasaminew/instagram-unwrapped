@@ -50,3 +50,9 @@ export function findLastTimestamp(text: string): string | null {
   }
   return last;
 }
+
+/** Remove every embedded date-like string (e.g. leftover quote-preview dates
+ * after the real trailing timestamp has already been stripped separately). */
+export function stripAllTimestamps(text: string): string {
+  return text.replace(new RegExp(DATE_RE.source, "g"), " ");
+}
