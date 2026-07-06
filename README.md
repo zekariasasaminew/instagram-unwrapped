@@ -49,6 +49,24 @@ export templates — no real personal data is used in any test.
 
 ## Architecture notes
 
+```mermaid
+flowchart LR
+    subgraph Browser["Your browser — nothing here ever leaves this box"]
+        direction TB
+        U["📦 Instagram export .zip"] --> M["Main thread<br/>(upload UI + Dashboard)"]
+        M -- "File via postMessage" --> W
+
+        subgraph W["Web Worker (public/worker.js)"]
+            direction TB
+            Z["zip.js<br/>reads the central directory,<br/>decompresses only the .html files"] --> L["linkedom<br/>parses each HTML fragment"]
+            L --> P["pipeline.ts<br/>messages · social graph · ads ·<br/>security · extras"]
+        end
+
+        W -- "Summary via postMessage" --> M
+        M --> D["Charts & tables<br/>(React components)"]
+    end
+```
+
 - **Why the worker is bundled separately.** Next.js/Turbopack's
   `new Worker(new URL('./worker.ts', import.meta.url))` pattern has open
   reports of asset-resolution gaps. Instead, `worker/parse.worker.ts` is
